@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">ConvertCash</string>
+    <string name="error_permisos">Permissions not granted by the user.</string>
+    <string name="pantalla_inicio_texto_1">Welcome<br />to<br />ConvertCash</string>
+    <string name="pantalla_inicio_texto_2">Just focus on the bill, press the button and we tell you its value!</string>
+    <string name="pantalla_inicio_texto_3">Let\'s get started</string>
+    <string name="logo">app_logo</string>
+    <string name="pantalla_home_camera_btn_billetes">Bills</string>
+    <string name="pantalla_home_camera_btn_etiqueta">Tag</string>
+
+</resources>

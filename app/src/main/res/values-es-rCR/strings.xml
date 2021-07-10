@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permisos">Los permisos no han sido obtenidos.</string>
+    <string name="pantalla_inicio_texto_1">Bienvenido\n a\n ConvertCash</string>
+    <string name="pantalla_inicio_texto_2">¡Solo enfoca el billete, presiona el botón y te decimos su valor!</string>
+    <string name="pantalla_inicio_texto_3">Comencemos</string>
+    <string name="logo">app_logo</string>
+    <string name="pantalla_home_camera_btn_billetes">Billetes</string>
+    <string name="pantalla_home_camera_btn_etiqueta">Etiquetas</string>
+</resources>
