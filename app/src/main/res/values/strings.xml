@@ -8,5 +8,11 @@
     <string name="logo">app_logo</string>
     <string name="pantalla_home_camera_btn_billetes">Bills</string>
     <string name="pantalla_home_camera_btn_etiqueta">Tag</string>
+    <string name="cambio_de_divisas">Currency Exchange</string>
+    <string name="usd">USD:</string>
+    <string name="hint">$$$</string>
+    <string name="eur">EUR</string>
+    <string name="cny">CNY:</string>
+    <string name="btn_volver">Return</string>
 
 </resources>

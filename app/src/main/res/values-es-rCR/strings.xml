@@ -7,4 +7,10 @@
     <string name="logo">app_logo</string>
     <string name="pantalla_home_camera_btn_billetes">Billetes</string>
     <string name="pantalla_home_camera_btn_etiqueta">Etiquetas</string>
+    <string name="cambio_de_divisas">Cambio de Divisas</string>
+    <string name="usd">USD:</string>
+    <string name="hint">$$$</string>
+    <string name="eur">EUR</string>
+    <string name="cny">CNY:</string>
+    <string name="btn_volver">Return</string>
 </resources>
