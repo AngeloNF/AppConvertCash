@@ -25,10 +25,11 @@ class Inicio : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inicio)
+        //Verifica los permisos al inicio de la aplicacion
         if(!allPermissionsGranted()){
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
+        //Boton de siguiente de la pantalla inicial
         pi_btn_1.setOnClickListener{ onClickSiguiente() }
 
     }
@@ -48,15 +49,20 @@ class Inicio : AppCompatActivity() {
         }
     }
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        //Comprueba el array de permisos
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
     private fun onClickSiguiente(){
+        //Al darle siguiente comprueba los permisos
         if(allPermissionsGranted()){
+            //Si los permisos son correctos ejecuta la nueva activity
             val i = Intent(this, HomeCamera::class.java)
             startActivity(i)
+            //Cierra la activity anterior
             finish()
         }else{
+            //Si no tiene los permisos, vuelve a solicitarlos
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
     }
