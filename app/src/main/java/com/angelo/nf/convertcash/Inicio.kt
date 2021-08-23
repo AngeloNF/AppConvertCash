@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.view.View
-import android.widget.Button
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -16,8 +14,6 @@ import kotlinx.android.synthetic.main.activity_inicio.*
 class Inicio : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "CameraXBasic"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
@@ -38,9 +34,7 @@ class Inicio : AppCompatActivity() {
         IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-
-            } else {
+            if (!allPermissionsGranted()) {
                 Toast.makeText(this,
                     R.string.error_permisos,
                     Toast.LENGTH_SHORT).show()

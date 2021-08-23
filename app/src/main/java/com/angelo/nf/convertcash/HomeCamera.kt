@@ -1,6 +1,8 @@
 package com.angelo.nf.convertcash
 
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +12,11 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.*
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
@@ -22,60 +25,79 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizerOptions
 import com.makeramen.roundedimageview.RoundedImageView
 import kotlinx.android.synthetic.main.activity_home_camera.*
-import kotlinx.android.synthetic.main.layout_ventana_flotante.*
 import org.json.JSONObject
-
+import java.io.ByteArrayOutputStream
 
 class HomeCamera : AppCompatActivity() {
-
+    //Variables de firebase
+    private lateinit var mAuth: FirebaseAuth
+    private  lateinit var db: FirebaseFirestore
     //Variables de TFLite
     private lateinit var localModel: LocalModel
     private lateinit var customImageLabelerOptions: CustomImageLabelerOptions
 
     //Variables de la ventana emergente al reconocer un billete
     private lateinit var bottomSheetDialog: BottomSheetDialog
-    private lateinit var  bottomSheetView: View
+    private lateinit var bottomSheetView: View
 
     //Variables de los elementos de la ventana emergente
     private lateinit var imageCapture: ImageCapture
     private lateinit var roundedImageView: RoundedImageView
-    private lateinit var textView_test: TextView
+    private lateinit var textviewTest: TextView
+    private lateinit var vf_et_usd: EditText
+    private lateinit var vf_et_eur: EditText
+    private lateinit var vf_et_cny: EditText
+
+    //Variables de objetos necesarios para el tipo de cambio
+    private lateinit var jsonTipoCambio: JSONObject
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_camera)
         iniciarCamera()
-        phc_btn_billete.setOnClickListener { view -> reconocimiento_billetes() }
-        phc_btn_etiqueta.setOnClickListener { view -> leer_etiquetas() }
+        phc_btn_billete.setOnClickListener { view -> reconocimientoBilletes() }
+        phc_btn_etiqueta.setOnClickListener { view -> leerEtiquetas() }
         //Carga el modelo personalizado de tflite
         localModel = LocalModel.Builder()
             .setAssetFilePath("model.tflite")
             .build()
         //Carga el modelo y configura las opcion de la IA
         customImageLabelerOptions = CustomImageLabelerOptions.Builder(localModel)
-                //Minimo de porcentaje para hacer valida una etiqueta
-            .setConfidenceThreshold(0.0f)
-                //camtindad de etiquetas maxima del modelo
-            .setMaxResultCount(3)
+            //Minimo de porcentaje para hacer valida una etiqueta
+            .setConfidenceThreshold(0.5f)
+            //camtindad de etiquetas maxima del modelo
+            .setMaxResultCount(4)
             .build()
 
         //Crea la view de la ventana emergente
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
-        bottomSheetView = LayoutInflater.from(applicationContext).inflate(R.layout.layout_ventana_flotante, findViewById(R.id.ventana_flotante))
+        bottomSheetView = LayoutInflater.from(applicationContext)
+            .inflate(R.layout.layout_ventana_flotante, findViewById(R.id.ventana_flotante))
+        bottomSheetDialog.setContentView(bottomSheetView)
 
         //Configura los botones de la ventana emergente
-        bottomSheetView.findViewById<Button>(R.id.vf_btn_cerrar).setOnClickListener { view -> bottomSheetDialog.dismiss() }
-        bottomSheetView.findViewById<Button>(R.id.vf_btn_cerrar).setOnClickListener { view -> bottomSheetDialog.dismiss() }
-        bottomSheetDialog.setContentView(bottomSheetView)
+        bottomSheetView.findViewById<Button>(R.id.vf_btn_cerrar)
+            .setOnClickListener { view -> bottomSheetDialog.dismiss() }
         //Variables de los items de la ventana emergente
         roundedImageView = bottomSheetView.findViewById(R.id.vf_iv_foto)
-        textView_test = bottomSheetView.findViewById(R.id.testing_text_view)
+        textviewTest = bottomSheetView.findViewById(R.id.testing_text_view)
+        vf_et_usd = bottomSheetView.findViewById(R.id.vf_et_usd)
+        vf_et_eur = bottomSheetView.findViewById(R.id.vf_et_eur)
+        vf_et_cny = bottomSheetView.findViewById(R.id.vf_et_cny)
+
+        //Variables de firebase
+        mAuth = FirebaseAuth.getInstance()
+        mAuth.signInAnonymously();
+        db = FirebaseFirestore.getInstance()
+
+        getJsonFromUrl("https://adminhotelparkview.000webhostapp.com/APITipoCambio/")
+
     }
 
     private fun iniciarCamera() {
         //Crea una instancia de la camara
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener(Runnable {
+        cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             //Carga la preview de la camara
             val preview = Preview.Builder()
@@ -98,7 +120,7 @@ class HomeCamera : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    fun leer_etiquetas() {
+    private fun leerEtiquetas() {
         val context = this
 
         imageCapture.takePicture(ContextCompat.getMainExecutor(this), object :
@@ -106,10 +128,16 @@ class HomeCamera : AppCompatActivity() {
             override fun onCaptureSuccess(imageProxy: ImageProxy) {
                 super.onCaptureSuccess(imageProxy)
 
+                //Variable de bitmap al tomar la foto
+                val bitmap = phc_contenedor_camera.bitmap!!
+
+                //Set bitmap a la view flotante
+                roundedImageView.setImageBitmap(bitmap)
+
                 //crea el tipo de imagen InputImage, requerido por la ia, desde un bitmap
                 val image =
                     InputImage.fromBitmap(
-                        phc_contenedor_camera.bitmap!!,
+                        bitmap,
                         imageProxy.imageInfo.rotationDegrees
                     )
 
@@ -117,11 +145,13 @@ class HomeCamera : AppCompatActivity() {
                 val recognizer =
                     TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
+
                 //Procesa la imagen para obtener los textos
                 recognizer.process(image)
                     .addOnSuccessListener { visionText ->
                         // Task completed successfully
-
+                        // VARIABLE DE TESTING
+                        textviewTest.text = visionText.text
                         Toast.makeText(context, visionText.text, Toast.LENGTH_SHORT).show()
                         // ...
                     }
@@ -129,6 +159,11 @@ class HomeCamera : AppCompatActivity() {
                         Toast.makeText(context, e.message.toString(), Toast.LENGTH_SHORT).show()
 
                     }
+
+
+                //Muestra la ventana emergente
+                //billetes_tipo_cambio()
+                bottomSheetDialog.show()
                 //NECESARIO: Libera la camara para su proxima captura de imagen
                 imageProxy.close()
             }
@@ -140,7 +175,7 @@ class HomeCamera : AppCompatActivity() {
         })
     }
 
-    fun reconocimiento_billetes() {
+    private fun reconocimientoBilletes() {
         val context = this
 
         imageCapture.takePicture(ContextCompat.getMainExecutor(this), object :
@@ -151,7 +186,8 @@ class HomeCamera : AppCompatActivity() {
                 //obtiene el bitmap de la imagen
                 val bitmapImage = phc_contenedor_camera.bitmap!!
                 roundedImageView.setImageBitmap(bitmapImage)
-
+                //Paso la imagen a firebase para su amacenamiento
+                imagenAFirebase(bitmapImage)
                 //crea el tipo de imagen InputImage, requerido por la ia, desde el bitmap obtenido anteriormente
                 val image =
                     InputImage.fromBitmap(
@@ -163,13 +199,13 @@ class HomeCamera : AppCompatActivity() {
                 val labeler = ImageLabeling.getClient(customImageLabelerOptions)
 
                 //VARIABLE DE TESTING
-                textView_test.text =""
+                textviewTest.text = ""
 
                 //Pasa la imagen a la ia para que la analice
                 labeler.process(image)
                     .addOnSuccessListener { labels ->
                         //VARIABLE DE TESTING
-                        var temp :String = ""
+                        var temp = ""
 
                         for (label in labels) {
                             //Etiqueta obtenida de la imagen
@@ -178,18 +214,20 @@ class HomeCamera : AppCompatActivity() {
                             //Probabilidad de acierto
                             val confidence = label.confidence
 
-                            //index de la etiqueta
-                            val index = label.index
-
                             //Porcentaje de acierto
                             val porcentaje = confidence * 100
 
                             //VARIABLE DE TESTING
                             temp += ("$porcentaje seguro que es un billete de $text\n")
-
+                            when (label.text) {
+                                "1mil" -> calcularTipoCambio(1000.0)
+                                "5mil" -> calcularTipoCambio(5000.0)
+                                "10mil" -> calcularTipoCambio(10000.0)
+                                "20mil" -> calcularTipoCambio(20000.0)
+                            }
                         }
                         //VARIABLE DE TESTING
-                        textView_test.text = temp
+                        textviewTest.text = temp
 
                         //Muestra la ventana emergente
                         //billetes_tipo_cambio()
@@ -210,24 +248,43 @@ class HomeCamera : AppCompatActivity() {
         })
     }
 
-    fun billetes_tipo_cambio(){
-        val requestQueue = Volley.newRequestQueue(this)
-        val jsArrayRequest = JsonObjectRequest(
-            Request.Method.GET,
-            "https://tipodecambio.paginasweb.cr/api",
-            "",
-            { response ->
-                Toast.makeText(this,response.toString(),Toast.LENGTH_LONG).show()
-                response.let { jsonObject -> textView_test.text = jsonObject.toString(1) }
+    fun getJsonFromUrl(url: String) {
+
+        val cache = DiskBasedCache(cacheDir, 1024 * 1024) // 1MB cap
+
+        val network = BasicNetwork(HurlStack())
+
+        val requestQueue = RequestQueue(cache, network).apply {
+            start()
+        }
+
+        val jsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET, url, null,
+            { response: JSONObject ->
+                jsonTipoCambio = response
             },
             { error ->
-                Log.d(
-                    "REQUESTERROR",
-                    "Error Respuesta en JSON: " + error.message
-                )
+                Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show()
             }
         )
-        requestQueue.add(jsArrayRequest)
+        requestQueue.add(jsonObjectRequest)
     }
+
+    fun calcularTipoCambio(valor_en_colones: Double) {
+        val total_dolares = valor_en_colones / jsonTipoCambio.getDouble("tipoCambio")
+        //Toast.makeText(this, jsonTipoCambio.getDouble("tipoCambio").toString(), Toast.LENGTH_LONG).show()
+        //Toast.makeText(this, valor_en_colones.toString(), Toast.LENGTH_LONG).show()
+        vf_et_usd.setText(total_dolares.toString())
+    }
+
+    fun imagenAFirebase(imagen:Bitmap){
+
+        var outputStream =  ByteArrayOutputStream();
+        imagen.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+        var base64IMG = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+        db.collection("Imagenes").add(hashMapOf("Imagen" to base64IMG))
+
+    }
+
 
 }

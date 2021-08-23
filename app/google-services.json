@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "829924520605",
+    "project_id": "convertcash-8c5d0",
+    "storage_bucket": "convertcash-8c5d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829924520605:android:c87ee83f9660781bb21a74",
+        "android_client_info": {
+          "package_name": "com.angelo.nf.convertcash"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829924520605-t8o169jt9t28of07qahehrb9ttucajl4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsV7PVSwsBwDHatQ2FNUsdkZCBaqhBO34"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "829924520605-t8o169jt9t28of07qahehrb9ttucajl4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

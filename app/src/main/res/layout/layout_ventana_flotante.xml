@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ventana_flotante"
     android:background="@drawable/contenedor_redondeado"
@@ -18,8 +18,9 @@
         android:textStyle="bold"/>
     <com.makeramen.roundedimageview.RoundedImageView
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="0dp"
         app:riv_corner_radius="20dp"
+        android:layout_weight="3"
         android:id="@+id/vf_iv_foto"/>
     <TextView
         android:layout_width="match_parent"
@@ -52,7 +53,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:hint="@string/hint"
-            android:textColorHint="@color/black"
+            android:textColorHint="@color/gray"
             android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
@@ -83,7 +84,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:hint="@string/hint"
-            android:textColorHint="@color/black"
+            android:textColorHint="@color/gray"
             android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
@@ -114,7 +115,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:hint="@string/hint"
-            android:textColorHint="@color/black"
+            android:textColorHint="@color/gray"
             android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
