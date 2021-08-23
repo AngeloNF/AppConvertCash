@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ventana_flotante"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ventana_flotante"
     android:background="@drawable/contenedor_redondeado"
     android:orientation="vertical">
+
     <TextView
+        android:id="@+id/vf_tv_titulo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -15,14 +17,32 @@
         android:text="@string/pantalla_home_camera_btn_billetes"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:textStyle="bold"/>
-    <com.makeramen.roundedimageview.RoundedImageView
+        android:textStyle="bold" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:riv_corner_radius="20dp"
-        android:layout_weight="3"
-        android:id="@+id/vf_iv_foto"/>
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/vf_iv_foto"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            app:riv_corner_radius="20dp" />
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/vf_iv_billete"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            app:riv_corner_radius="20dp" />
+
+    </LinearLayout>
+
     <TextView
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -30,118 +50,122 @@
         android:text="@string/cambio_de_divisas"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="10dp"
-        >
+        android:padding="10dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
             android:text="@string/usd"
             android:textColor="@color/black"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_weight="1"/>
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/vf_et_usd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:hint="@string/hint"
-            android:textColorHint="@color/gray"
-            android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
+            android:gravity="center"
+            android:hint="@string/hint"
             android:padding="5dp"
-            />
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
 
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="10dp"
-        >
+        android:padding="10dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
             android:text="@string/eur"
             android:textColor="@color/black"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_weight="1"/>
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/vf_et_eur"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:hint="@string/hint"
-            android:textColorHint="@color/gray"
-            android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
+            android:gravity="center"
+            android:hint="@string/hint"
             android:padding="5dp"
-            />
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
 
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="10dp"
-        >
+        android:padding="10dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
             android:text="@string/cny"
             android:textColor="@color/black"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_weight="1"/>
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/vf_et_cny"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:hint="@string/hint"
-            android:textColorHint="@color/gray"
-            android:textColor="@color/black"
             android:layout_weight="1"
             android:background="@drawable/edittext_style"
+            android:gravity="center"
+            android:hint="@string/hint"
             android:padding="5dp"
-            />
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
 
 
     </LinearLayout>
+
     <TextView
+        android:id="@+id/testing_text_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/cny"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_weight="1"
-        android:id="@+id/testing_text_view"/>
+
+        android:textStyle="bold" />
+
     <Button
         android:id="@+id/vf_btn_cerrar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_gravity="center_horizontal"
+        android:layout_margin="20sp"
         android:background="@drawable/button"
-        android:text="@string/btn_volver"/>
+        android:gravity="center"
+        android:text="@string/btn_volver"
+        android:textColor="@color/white" />
 
 
 </LinearLayout>

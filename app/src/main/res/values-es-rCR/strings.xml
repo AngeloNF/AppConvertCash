@@ -12,5 +12,5 @@
     <string name="hint">$$$</string>
     <string name="eur">EUR</string>
     <string name="cny">CNY:</string>
-    <string name="btn_volver">Return</string>
+    <string name="btn_volver">Volver</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.angelo.nf.convertcash
 
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -27,6 +28,8 @@ import com.makeramen.roundedimageview.RoundedImageView
 import kotlinx.android.synthetic.main.activity_home_camera.*
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.text.DecimalFormat
+import kotlin.math.roundToInt
 
 class HomeCamera : AppCompatActivity() {
     //Variables de firebase
@@ -43,6 +46,7 @@ class HomeCamera : AppCompatActivity() {
     //Variables de los elementos de la ventana emergente
     private lateinit var imageCapture: ImageCapture
     private lateinit var roundedImageView: RoundedImageView
+    private lateinit var roundedImageViewBillete: RoundedImageView
     private lateinit var textviewTest: TextView
     private lateinit var vf_et_usd: EditText
     private lateinit var vf_et_eur: EditText
@@ -80,6 +84,7 @@ class HomeCamera : AppCompatActivity() {
             .setOnClickListener { view -> bottomSheetDialog.dismiss() }
         //Variables de los items de la ventana emergente
         roundedImageView = bottomSheetView.findViewById(R.id.vf_iv_foto)
+        roundedImageViewBillete = bottomSheetView.findViewById(R.id.vf_iv_billete)
         textviewTest = bottomSheetView.findViewById(R.id.testing_text_view)
         vf_et_usd = bottomSheetView.findViewById(R.id.vf_et_usd)
         vf_et_eur = bottomSheetView.findViewById(R.id.vf_et_eur)
@@ -89,6 +94,7 @@ class HomeCamera : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         mAuth.signInAnonymously();
         db = FirebaseFirestore.getInstance()
+
 
         getJsonFromUrl("https://adminhotelparkview.000webhostapp.com/APITipoCambio/")
 
@@ -175,6 +181,13 @@ class HomeCamera : AppCompatActivity() {
         })
     }
 
+    fun rotateBitmap(source: Bitmap, degrees: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(degrees)
+        return Bitmap.createBitmap(
+            source, 0, 0, source.width, source.height, matrix, true
+        )
+    }
     private fun reconocimientoBilletes() {
         val context = this
 
@@ -185,7 +198,9 @@ class HomeCamera : AppCompatActivity() {
 
                 //obtiene el bitmap de la imagen
                 val bitmapImage = phc_contenedor_camera.bitmap!!
-                roundedImageView.setImageBitmap(bitmapImage)
+
+                roundedImageView.setImageBitmap(rotateBitmap(bitmapImage,90f))
+
                 //Paso la imagen a firebase para su amacenamiento
                 imagenAFirebase(bitmapImage)
                 //crea el tipo de imagen InputImage, requerido por la ia, desde el bitmap obtenido anteriormente
@@ -208,8 +223,6 @@ class HomeCamera : AppCompatActivity() {
                         var temp = ""
 
                         for (label in labels) {
-                            //Etiqueta obtenida de la imagen
-                            val text = label.text
 
                             //Probabilidad de acierto
                             val confidence = label.confidence
@@ -218,12 +231,25 @@ class HomeCamera : AppCompatActivity() {
                             val porcentaje = confidence * 100
 
                             //VARIABLE DE TESTING
-                            temp += ("$porcentaje seguro que es un billete de $text\n")
+                            temp += ("${porcentaje.roundToInt()} % de probabilidad de acierto")
                             when (label.text) {
-                                "1mil" -> calcularTipoCambio(1000.0)
-                                "5mil" -> calcularTipoCambio(5000.0)
-                                "10mil" -> calcularTipoCambio(10000.0)
-                                "20mil" -> calcularTipoCambio(20000.0)
+                                "1mil" ->{
+                                    calcularTipoCambio(1000.0)
+                                    roundedImageViewBillete.setImageResource(R.mipmap.mil_polimero)
+                                }
+                                "5mil" -> {
+                                    calcularTipoCambio(5000.0)
+                                    roundedImageViewBillete.setImageResource(R.mipmap.cinco_polimero)
+                                }
+                                "10mil" -> {
+                                    calcularTipoCambio(10000.0)
+                                    roundedImageViewBillete.setImageResource(R.mipmap.diez_mil_polimero)
+                                }
+                                "20mil" -> {
+                                    calcularTipoCambio(20000.0)
+                                    roundedImageViewBillete.setImageResource(R.mipmap.viente_mil_polimero)
+
+                                }
                             }
                         }
                         //VARIABLE DE TESTING
@@ -271,10 +297,17 @@ class HomeCamera : AppCompatActivity() {
     }
 
     fun calcularTipoCambio(valor_en_colones: Double) {
-        val total_dolares = valor_en_colones / jsonTipoCambio.getDouble("tipoCambio")
-        //Toast.makeText(this, jsonTipoCambio.getDouble("tipoCambio").toString(), Toast.LENGTH_LONG).show()
-        //Toast.makeText(this, valor_en_colones.toString(), Toast.LENGTH_LONG).show()
-        vf_et_usd.setText(total_dolares.toString())
+        val tipoCambio = jsonTipoCambio.get("tipoCambio") as JSONObject
+        val crcToUsd:Double = tipoCambio.getDouble("CRCtoUSD")
+        val usdToEur:Double = tipoCambio.getDouble("USDtoEUR")
+        val usdToCny:Double = tipoCambio.getDouble("USDtoCNY")
+        val total_dolares = valor_en_colones / crcToUsd
+        val total_euros = total_dolares / usdToEur
+        val total_yuan = total_dolares * usdToCny
+        val format = DecimalFormat("#.00")
+        vf_et_usd.setText(format.format(total_dolares).toString())
+        vf_et_eur.setText(format.format(total_euros).toString())
+        vf_et_cny.setText(format.format(total_yuan).toString())
     }
 
     fun imagenAFirebase(imagen:Bitmap){
@@ -282,6 +315,7 @@ class HomeCamera : AppCompatActivity() {
         var outputStream =  ByteArrayOutputStream();
         imagen.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         var base64IMG = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+
         db.collection("Imagenes").add(hashMapOf("Imagen" to base64IMG))
 
     }
